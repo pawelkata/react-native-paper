@@ -13,5 +13,5 @@ export type {
   AppbarTrailingAction,
   AppbarTrailingActions,
   AppbarVariant,
-  Props,
 } from './types';
+export type { AppbarProps } from './Appbar';

@@ -204,6 +204,22 @@ describe('Appbar content', () => {
       });
     }
   );
+
+  it('renders only the headline image and drops the subtitle on a small app bar', async () => {
+    await render(
+      <Appbar
+        variant="small"
+        headline="Inbox"
+        headlineImage={<View testID="brand-mark" />}
+        subtitle="3 unread"
+      />
+    );
+
+    expect(
+      screen.getByTestId('brand-mark', { includeHiddenElements: true })
+    ).toBeOnTheScreen();
+    expect(screen.queryByText('3 unread')).not.toBeOnTheScreen();
+  });
 });
 
 describe('Appbar surface', () => {
@@ -556,6 +572,55 @@ describe('Appbar search', () => {
       maxWidth: 720,
     });
   });
+
+  it('warns when a search app bar is missing a searchBar', async () => {
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await render(<Appbar variant="search" />);
+
+    expect(console.warn).toHaveBeenCalledWith(
+      'Appbar variant "search" is missing a searchBar, so its body will render blank'
+    );
+
+    jest.restoreAllMocks();
+  });
+
+  it('does not warn when a search app bar has a searchBar', async () => {
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await render(
+      <Appbar
+        variant="search"
+        searchBar={{ placeholder: 'Search messages', value: '' }}
+      />
+    );
+
+    expect(console.warn).not.toHaveBeenCalled();
+
+    jest.restoreAllMocks();
+  });
+
+  it('renders a filled trailing action on a search app bar', async () => {
+    await render(
+      <Appbar
+        variant="search"
+        searchBar={{ placeholder: 'Search messages', value: '' }}
+        trailingActions={[
+          {
+            key: 'filters',
+            icon: 'star',
+            'aria-label': 'Filters',
+            variant: 'filled',
+            testID: 'expressive-action',
+          },
+        ]}
+      />
+    );
+
+    expect(screen.getByTestId('expressive-action').parent).toHaveStyle({
+      backgroundColor: LightTheme.colors.primary,
+    });
+  });
 });
 
 describe('Appbar accessibility', () => {
@@ -783,6 +848,31 @@ describe('Appbar accessibility', () => {
       screen.getByRole('button', { name: 'Search inbox' }),
       screen.getByRole('button', { name: 'More options' }),
     ]);
+  });
+
+  it.each(writtenHeadlineVariants)(
+    'warns when a %s app bar is missing a headline',
+    async (variant) => {
+      jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await render(<Appbar variant={variant} />);
+
+      expect(console.warn).toHaveBeenCalledWith(
+        `Appbar variant "${variant}" is missing a headline, so it has no accessible heading`
+      );
+
+      jest.restoreAllMocks();
+    }
+  );
+
+  it('does not warn when a written headline variant has a headline', async () => {
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await render(<Appbar variant="small" headline="Inbox" />);
+
+    expect(console.warn).not.toHaveBeenCalled();
+
+    jest.restoreAllMocks();
   });
 
   it('does not remount a surviving trailing action when its configuration changes', async () => {

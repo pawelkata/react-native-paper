@@ -21,13 +21,6 @@ export type Pages = Record<string, Page | Record<string, Page>>;
 type ComponentDocsConfig = {
   sourceRootDir: string;
   pages: Pages;
-  typescriptProps: Record<
-    string,
-    {
-      sourcePath: string;
-      typeName: string;
-    }
-  >;
   customFields: {
     moreExamples: Record<string, Record<string, string>>;
     knownIssues: Record<string, Record<string, string>>;
@@ -39,7 +32,13 @@ type ComponentDocsConfig = {
 
 const pages = {
   ActivityIndicator: 'ActivityIndicator',
-  Appbar: 'Appbar/Appbar',
+  Appbar: {
+    source: 'Appbar/Appbar',
+    // The default export is the memoized `MemoizedAppbar`, but the JSDoc
+    // lives on the inner `Appbar` declaration — same pattern as `Portal`
+    // and `Typography/Text` below.
+    component: 'Appbar',
+  },
   Avatar: {
     AvatarIcon: 'Avatar/AvatarIcon',
     AvatarImage: 'Avatar/AvatarImage',
@@ -167,19 +166,6 @@ const pages = {
 const componentDocsConfig: ComponentDocsConfig = {
   sourceRootDir: path.join(__dirname, '..', 'src', 'components'),
   pages,
-  typescriptProps: {
-    'Appbar/Appbar': {
-      sourcePath: path.join(
-        __dirname,
-        '..',
-        'src',
-        'components',
-        'Appbar',
-        'types.ts'
-      ),
-      typeName: 'Props',
-    },
-  },
   customFields: {
     moreExamples: {
       Portal: {
