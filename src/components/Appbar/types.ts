@@ -1,7 +1,6 @@
 import * as React from 'react';
 import type {
   ColorValue,
-  GestureResponderEvent,
   StyleProp,
   TextStyle,
   View,
@@ -115,45 +114,7 @@ type AppbarBackButton = Omit<
 
 export type AppbarLeadingButton = AppbarLeadingIconButton | AppbarBackButton;
 
-type AppbarWrittenHeadline = {
-  /** Written headline displayed by the app bar. */
-  headline: string;
-  /** Optional supporting text displayed below the headline. */
-  subtitle?: string;
-  /** Props applied to the headline heading. */
-  headlineProps?: AppbarHeadlineTextProps;
-  /** Props applied to the subtitle text. */
-  subtitleProps?: AppbarTextProps;
-};
-
-type AppbarHeadlineImage = {
-  /** Image or logo displayed in the app bar. It should fit within 32dp height. */
-  headlineImage: React.ReactElement;
-};
-
-type AppbarTextHeadline = AppbarWrittenHeadline & {
-  /** Visual and layout variant of the app bar. */
-  variant: AppbarHeadlineVariant;
-  headlineImage?: never;
-};
-
-type AppbarSmallImageHeadline = AppbarHeadlineImage & {
-  /** Visual and layout variant of the app bar. */
-  variant: 'small';
-  /** Accessible page headline. The image replaces this text visually. */
-  headline: string;
-  subtitle?: never;
-  headlineProps?: never;
-  subtitleProps?: never;
-};
-
-type AppbarFlexibleImageHeadline = AppbarWrittenHeadline &
-  AppbarHeadlineImage & {
-    /** Visual and layout variant of the app bar. */
-    variant: Exclude<AppbarHeadlineVariant, 'small'>;
-  };
-
-type AppbarBaseProps = Omit<
+export type AppbarBaseProps = Omit<
   ViewProps,
   'accessibilityLabel' | 'accessibilityRole' | 'children' | 'style' | 'testID'
 > & {
@@ -179,27 +140,6 @@ type AppbarBaseProps = Omit<
   testID?: string;
 };
 
-type AppbarHeadlineProps = {
-  /** Headline and subtitle alignment. */
-  headlineAlignment?: AppbarHeadlineAlignment;
-  /** Trailing actions. */
-  trailingActions?: AppbarTrailingActions;
-  /** Style applied to the headline and subtitle area. */
-  contentStyle?: StyleProp<ViewStyle>;
-  searchBar?: never;
-} & (
-  | {
-      /** Called when the headline area is pressed. */
-      onHeadlinePress: (event: GestureResponderEvent) => void;
-      /** Props applied to the interactive headline area. */
-      headlinePressableProps?: AppbarHeadlinePressableProps;
-    }
-  | {
-      onHeadlinePress?: never;
-      headlinePressableProps?: never;
-    }
-);
-
 export type AppbarSearchbarProps = Omit<
   SearchbarProps,
   'elevation' | 'mode' | 'showDivider' | 'theme'
@@ -208,31 +148,8 @@ export type AppbarSearchbarProps = Omit<
   placeholder: string;
 };
 
-type AppbarSearchProps = {
-  /** Visual and layout variant of the app bar. */
-  variant: 'search';
-  /** Props forwarded to the existing Paper Searchbar. */
-  searchBar: AppbarSearchbarProps;
-  /** Exterior trailing actions. */
-  trailingActions?: readonly AppbarStandardTrailingAction[];
-  headline?: never;
-  subtitle?: never;
-  headlineImage?: never;
-  headlineAlignment?: never;
-  headlineProps?: never;
-  subtitleProps?: never;
-  onHeadlinePress?: never;
-  headlinePressableProps?: never;
-  contentStyle?: never;
-};
-
-export type Props = AppbarBaseProps &
-  (
-    | (AppbarHeadlineProps &
-        (
-          | AppbarTextHeadline
-          | AppbarSmallImageHeadline
-          | AppbarFlexibleImageHeadline
-        ))
-    | AppbarSearchProps
-  );
+// `Props` is declared in `Appbar.tsx` (co-located with the `Appbar` component)
+// so the docs-generation parser — which looks for a `Props` type-alias
+// declaration in the same source file as the component it documents — can
+// find it.
+export type { Props as AppbarProps } from './Appbar';

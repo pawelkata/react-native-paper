@@ -151,6 +151,12 @@ const MyComponent = () => (
 );
 ```
 
+`Appbar`'s props are a single flat type shared by every `variant`. Passing a prop to a variant it doesn't apply to doesn't raise a type error — each prop's own JSDoc states which variant(s) it's usable for:
+
+- Usable only for `small`, `medium-flexible`, and `large-flexible`: `headline`, `subtitle`, `headlineProps`, `subtitleProps`, `headlineImage`, `headlineAlignment`, `contentStyle`, `onHeadlinePress`, `headlinePressableProps`. Omitting `headline` logs a development warning.
+- Usable only for `search`: `searchBar`. Omitting it logs a development warning.
+- Usable for every variant, including `search`: `trailingActions`, using the same shape — a standard array, or a single filled/tonal action — everywhere, though a filled/tonal action isn't intended for `search`.
+
 #### Bottom toolbar support
 
 Material Design 3 drops the bottom bar support contained previously in the `Appbar` scope and moves it to `Toolbars`, hence you can't use the component to construct a bottom bar anymore - for these cases please use the `Toolbar` component.

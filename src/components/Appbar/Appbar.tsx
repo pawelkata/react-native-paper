@@ -1,12 +1,27 @@
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
-import type { ColorValue, ViewProps, ViewStyle } from 'react-native';
+import type {
+  ColorValue,
+  GestureResponderEvent,
+  StyleProp,
+  ViewProps,
+  ViewStyle,
+} from 'react-native';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import AppbarButton from './AppbarButton';
 import AppbarContent from './AppbarContent';
-import type { Props } from './types';
+import type {
+  AppbarBaseProps,
+  AppbarHeadlineAlignment,
+  AppbarHeadlinePressableProps,
+  AppbarHeadlineTextProps,
+  AppbarSearchbarProps,
+  AppbarTextProps,
+  AppbarTrailingActions,
+  AppbarVariant,
+} from './types';
 import {
   APPBAR_HEADLINE_IMAGE_HEIGHT,
   APPBAR_ICON_BUTTON_SIZE,
@@ -20,6 +35,75 @@ import Searchbar from '../Searchbar';
 import Surface from '../Surface';
 
 const EMPTY_TRAILING_ACTIONS = [] as const;
+
+export type Props = AppbarBaseProps & {
+  /** Visual and layout variant of the app bar. */
+  variant: AppbarVariant;
+  /**
+   * Written headline displayed by the app bar. Usable for the `small`,
+   * `medium-flexible`, and `large-flexible` variants — it is the accessible
+   * heading for those variants (including when `headlineImage` visually
+   * replaces it on `small`) and omitting it logs a development warning.
+   */
+  headline?: string;
+  /**
+   * Optional supporting text displayed below the headline. Usable for the
+   * `small`, `medium-flexible`, and `large-flexible` variants.
+   */
+  subtitle?: string;
+  /**
+   * Props applied to the headline heading. Usable for the `small`,
+   * `medium-flexible`, and `large-flexible` variants.
+   */
+  headlineProps?: AppbarHeadlineTextProps;
+  /**
+   * Props applied to the subtitle text. Usable for the `small`,
+   * `medium-flexible`, and `large-flexible` variants.
+   */
+  subtitleProps?: AppbarTextProps;
+  /**
+   * Image or logo displayed in the app bar. It should fit within 32dp
+   * height. Usable for the `small`, `medium-flexible`, and `large-flexible`
+   * variants. On `small` it replaces the visible headline text (`headline`
+   * is still required for accessibility labeling). On `medium-flexible` and
+   * `large-flexible` it is shown alongside the written headline and
+   * subtitle.
+   */
+  headlineImage?: React.ReactElement;
+  /**
+   * Headline and subtitle alignment. Usable for the `small`,
+   * `medium-flexible`, and `large-flexible` variants.
+   */
+  headlineAlignment?: AppbarHeadlineAlignment;
+  /**
+   * Style applied to the headline and subtitle area. Usable for the
+   * `small`, `medium-flexible`, and `large-flexible` variants.
+   */
+  contentStyle?: StyleProp<ViewStyle>;
+  /**
+   * Called when the headline area is pressed. Usable for the `small`,
+   * `medium-flexible`, and `large-flexible` variants, independently of
+   * `headlinePressableProps`.
+   */
+  onHeadlinePress?: (event: GestureResponderEvent) => void;
+  /**
+   * Props applied to the interactive headline area. Usable for the `small`,
+   * `medium-flexible`, and `large-flexible` variants; inert unless
+   * `onHeadlinePress` is also set.
+   */
+  headlinePressableProps?: AppbarHeadlinePressableProps;
+  /**
+   * Trailing actions. Usable for every variant, including `search`. A
+   * single filled or tonal action isn't intended for `search`, but this
+   * isn't enforced at the type level.
+   */
+  trailingActions?: AppbarTrailingActions;
+  /**
+   * Props forwarded to the existing Paper Searchbar. Usable only for the
+   * `search` variant; omitting it logs a development warning.
+   */
+  searchBar?: AppbarSearchbarProps;
+};
 
 /**
  * A Material Design app bar for displaying a page headline, navigation, and
@@ -140,6 +224,15 @@ const EMPTY_TRAILING_ACTIONS = [] as const;
  * `variant="medium-flexible"` and `variant="large-flexible"`; centered
  * content uses `headlineAlignment="center"`.
  *
+ * `Appbar`'s props are a single flat type: every prop is available on every
+ * `variant`, and each prop's own JSDoc states which variant(s) it's usable
+ * for (for example, `headline` and `headlineImage` are usable for `small`,
+ * `medium-flexible`, and `large-flexible`, while `searchBar` is usable only
+ * for `search`). Passing a prop to a variant it doesn't apply to doesn't
+ * raise a type error; it's either silently ignored by that variant's render
+ * logic, or — for a missing `headline` on a non-search variant, or a
+ * missing `searchBar` on `search` — logged as a development warning.
+ *
  * ## Bottom toolbar support
  *
  * Material Design 3 drops the bottom bar support contained previously in the Appbar scope
@@ -172,6 +265,19 @@ const Appbar = ({
   ...rest
 }: Props) => {
   const theme = useInternalTheme(themeOverrides);
+
+  if (variant !== 'search' && !headline) {
+    console.warn(
+      `Appbar variant "${variant}" is missing a headline, so it has no accessible heading`
+    );
+  }
+
+  if (variant === 'search' && !searchBar) {
+    console.warn(
+      'Appbar variant "search" is missing a searchBar, so its body will render blank'
+    );
+  }
+
   const detectedInsets = useSafeAreaInsets();
   const { customBackground, restStyle, borderRadius } = React.useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
@@ -461,3 +567,4 @@ export default MemoizedAppbar;
 
 // @component-docs ignore-next-line
 export { MemoizedAppbar as Appbar };
+export type { Props as AppbarProps };

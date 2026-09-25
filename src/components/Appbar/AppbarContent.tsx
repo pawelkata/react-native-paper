@@ -3,9 +3,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type {
+  AppbarProps,
   AppbarHeadlineAlignment,
   AppbarHeadlineVariant,
-  Props as AppbarProps,
 } from './types';
 import { APPBAR_HEADLINE_IMAGE_HEIGHT } from './utils';
 import type { Theme, TypescaleKey } from '../../theme/types';
