@@ -4,7 +4,6 @@ import type {
   ColorValue,
   GestureResponderEvent,
   StyleProp,
-  ViewProps,
   ViewStyle,
 } from 'react-native';
 
@@ -336,15 +335,6 @@ const Appbar = ({
     }),
     [theme, searchBackgroundColor]
   );
-  const {
-    accessibilityLabel: _accessibilityLabel,
-    accessibilityRole: _accessibilityRole,
-    accessible: _accessible,
-    'aria-label': _ariaLabel,
-    role: _role,
-    ...viewProps
-  } = rest as ViewProps;
-
   const renderLeadingButton = () =>
     leadingButton ? (
       <AppbarButton button={leadingButton} leading theme={theme} />
@@ -491,7 +481,7 @@ const Appbar = ({
       style={surfaceStyle}
       {...borderRadius}
     >
-      <View {...viewProps} testID={testID} style={appbarStyle}>
+      <View {...rest} testID={testID} style={appbarStyle}>
         {variant === 'search'
           ? renderSearchAppbar()
           : variant === 'small'

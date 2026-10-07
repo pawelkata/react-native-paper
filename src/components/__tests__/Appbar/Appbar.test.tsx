@@ -633,6 +633,24 @@ describe('Appbar accessibility', () => {
     }
   );
 
+  it.each([...writtenHeadlineVariants, 'search'] as const)(
+    'forwards container accessibility props on a %s app bar',
+    async (variant) => {
+      await render(
+        <Appbar
+          variant={variant}
+          headline="Inbox"
+          searchBar={{ placeholder: 'Search inbox', value: '' }}
+          accessible
+          aria-label="Menu"
+          role="toolbar"
+        />
+      );
+
+      expect(screen.getByRole('toolbar', { name: 'Menu' })).toBeOnTheScreen();
+    }
+  );
+
   it('hides a small headline image behind one named heading', async () => {
     await render(
       <Appbar
