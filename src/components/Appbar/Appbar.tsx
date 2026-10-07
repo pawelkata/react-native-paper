@@ -212,7 +212,7 @@ export type Props = AppbarBaseProps & {
  * | `safeAreaInsets` | Overrides detected top, left, or right safe-area insets. |
  * | `statusBarHeight` | Overrides only the automatic top inset. |
  * | `contentStyle` | Styles the headline and subtitle area. |
- * | `style` | Styles the app bar and can override its background color. |
+ * | `style` | Styles the app bar container, including its safe-area padding, and can override its background color. Accepts Reanimated animated styles. |
  *
  * ## Migrating from the compound API
  *
@@ -278,17 +278,18 @@ const Appbar = ({
   }
 
   const detectedInsets = useSafeAreaInsets();
-  const { customBackground, restStyle, borderRadius } = React.useMemo(() => {
+  // The flattened style is only read for the static overrides `Surface`
+  // takes as props. `style` itself is forwarded unflattened, since Reanimated
+  // only recognizes animated styles it receives as separate entries.
+  const { customBackground, borderRadius } = React.useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const resolvedStyle = (StyleSheet.flatten(style) || {}) as ViewStyle & {
       backgroundColor?: ColorValue;
     };
-    const { backgroundColor, ...remainingStyle } = resolvedStyle;
 
     return {
-      customBackground: backgroundColor,
-      restStyle: remainingStyle,
-      borderRadius: getAppbarBorders(remainingStyle),
+      customBackground: resolvedStyle.backgroundColor,
+      borderRadius: getAppbarBorders(resolvedStyle),
     };
   }, [style]);
   const backgroundColor =
@@ -307,15 +308,18 @@ const Appbar = ({
   );
   const sideStyle = React.useMemo(() => ({ width: sideWidth }), [sideWidth]);
   const surfaceStyle = React.useMemo(
-    () => ({
-      paddingTop: topInset,
-      paddingHorizontal: horizontalInset,
-    }),
-    [horizontalInset, topInset]
+    () => [
+      {
+        paddingTop: topInset,
+        paddingHorizontal: horizontalInset,
+      },
+      style,
+    ],
+    [horizontalInset, style, topInset]
   );
   const appbarStyle = React.useMemo(
-    () => [styles.appbar, { backgroundColor, minHeight }, restStyle],
-    [backgroundColor, minHeight, restStyle]
+    () => [styles.appbar, { minHeight }],
+    [minHeight]
   );
   const resolvedSearchInputStyle = React.useMemo(
     () => [{ color: theme.colors.onSurface }, searchBar?.inputStyle],
@@ -474,14 +478,16 @@ const Appbar = ({
 
   return (
     <Surface
+      {...rest}
       ref={ref}
+      testID={testID}
       elevation={0}
       backgroundColor={backgroundColor}
       theme={theme}
       style={surfaceStyle}
       {...borderRadius}
     >
-      <View {...rest} testID={testID} style={appbarStyle}>
+      <View style={appbarStyle}>
         {variant === 'search'
           ? renderSearchAppbar()
           : variant === 'small'
@@ -494,6 +500,7 @@ const Appbar = ({
 
 const styles = StyleSheet.create({
   appbar: {
+    flexGrow: 1,
     paddingHorizontal: 4,
   },
   smallRow: {

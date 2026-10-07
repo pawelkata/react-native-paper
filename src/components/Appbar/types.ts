@@ -130,7 +130,10 @@ export type AppbarBaseProps = Omit<
     left?: number;
     right?: number;
   };
-  /** Style applied to the app bar container. */
+  /**
+   * Style applied to the app bar container, which includes the safe-area
+   * padding. Accepts Reanimated animated styles.
+   */
   style?: StyleProp<AnimatedStyle<ViewStyle>>;
   /** Reference for the app bar container. */
   ref?: React.Ref<View>;

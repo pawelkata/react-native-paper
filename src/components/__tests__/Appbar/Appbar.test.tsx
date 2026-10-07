@@ -1,8 +1,13 @@
 import * as React from 'react';
-import { Dimensions, Text, View } from 'react-native';
-import type { GestureResponderEvent } from 'react-native';
+import { Dimensions, Pressable, Text, View } from 'react-native';
+import type { GestureResponderEvent, ViewStyle } from 'react-native';
 
 import { describe, expect, it, jest } from '@jest/globals';
+import {
+  getAnimatedStyle,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { render, screen, userEvent, waitFor } from '../../../test-utils';
@@ -20,6 +25,28 @@ const writtenHeadlineVariants: Exclude<AppbarVariant, 'search'>[] = [
   'medium-flexible',
   'large-flexible',
 ];
+
+const AnimatedAppbar = ({ staticStyle }: { staticStyle?: ViewStyle }) => {
+  const opacity = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  return (
+    <>
+      <Pressable
+        testID="reveal-appbar"
+        onPress={() => {
+          opacity.value = 1;
+        }}
+      />
+      <Appbar
+        variant="small"
+        headline="Inbox"
+        style={staticStyle ? [staticStyle, animatedStyle] : animatedStyle}
+        testID={testIDPrefix}
+      />
+    </>
+  );
+};
 
 const decorativeHeadlineImage = (
   <View>
@@ -229,7 +256,7 @@ describe('Appbar surface', () => {
       <Appbar variant="small" headline="Inbox" testID={testIDPrefix} />
     );
 
-    expect(screen.getByTestId(testIDPrefix).parent).toHaveStyle({
+    expect(screen.getByTestId(testIDPrefix)).toHaveStyle({
       backgroundColor: LightTheme.colors.surface,
     });
 
@@ -242,7 +269,7 @@ describe('Appbar surface', () => {
       />
     );
 
-    expect(screen.getByTestId(testIDPrefix).parent).toHaveStyle({
+    expect(screen.getByTestId(testIDPrefix)).toHaveStyle({
       backgroundColor: LightTheme.colors.surfaceContainer,
     });
 
@@ -256,7 +283,7 @@ describe('Appbar surface', () => {
       />
     );
 
-    expect(screen.getByTestId(testIDPrefix).parent).toHaveStyle({
+    expect(screen.getByTestId(testIDPrefix)).toHaveStyle({
       backgroundColor: customBackground,
     });
   });
@@ -283,12 +310,68 @@ describe('Appbar surface', () => {
       </SafeAreaProvider>
     );
 
-    expect(screen.getByTestId(testIDPrefix).parent).toHaveStyle({
+    expect(screen.getByTestId(testIDPrefix)).toHaveStyle({
       borderBottomLeftRadius: 16,
       borderBottomRightRadius: 16,
       paddingTop: 20,
       paddingHorizontal: 12,
     });
+  });
+
+  it('animates the app bar with a Reanimated style', async () => {
+    await render(<AnimatedAppbar />);
+
+    const appbar = screen.getByTestId(testIDPrefix);
+    expect(getAnimatedStyle(appbar)).toMatchObject({ opacity: 0 });
+
+    await userEvent.press(screen.getByTestId('reveal-appbar'));
+    await jest.runAllTimersAsync();
+
+    expect(getAnimatedStyle(appbar)).toMatchObject({ opacity: 1 });
+  });
+
+  it('positions the whole app bar, including its safe-area padding', async () => {
+    await render(
+      <Appbar
+        variant="small"
+        headline="Inbox"
+        statusBarHeight={20}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1 }}
+        testID={testIDPrefix}
+      />
+    );
+
+    expect(screen.getByTestId(testIDPrefix)).toHaveStyle({
+      position: 'absolute',
+      top: 0,
+      zIndex: 1,
+      paddingTop: 20,
+    });
+  });
+
+  it('keeps static styles combined with an animated style', async () => {
+    const customBackground = 'rebeccapurple';
+    await render(
+      <AnimatedAppbar
+        staticStyle={{
+          position: 'absolute',
+          top: 0,
+          backgroundColor: customBackground,
+        }}
+      />
+    );
+
+    const appbar = screen.getByTestId(testIDPrefix);
+    expect(appbar).toHaveStyle({
+      position: 'absolute',
+      top: 0,
+      backgroundColor: customBackground,
+    });
+
+    await userEvent.press(screen.getByTestId('reveal-appbar'));
+    await jest.runAllTimersAsync();
+
+    expect(getAnimatedStyle(appbar)).toMatchObject({ opacity: 1 });
   });
 });
 
