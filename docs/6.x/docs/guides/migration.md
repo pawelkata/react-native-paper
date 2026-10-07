@@ -108,7 +108,7 @@ Some components now accept explicit `testID` props for their interactable elemen
 
 ### Appbar
 
-The Paper 6.x `Appbar` is a big refatctor, which drops the previously used compound component approach.
+The Paper 6.x `Appbar` is a big refactor, which drops the previously used compound component approach.
 
 #### Migrating from the compound API
 
